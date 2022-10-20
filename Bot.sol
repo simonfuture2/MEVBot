@@ -1,9 +1,11 @@
 pragma solidity ^0.6.6;
 
-// Import Libraries Migrator/Exchange/Factory
+// Import Libraries: Migrator, Exchange
 import "https://raw.githubusercontent.com/Uniswap/v2-periphery/master/contracts/interfaces/IUniswapV2Migrator.sol";
 import "https://raw.githubusercontent.com/Uniswap/v2-periphery/master/contracts/interfaces/V1/IUniswapV1Exchange.sol";
-import "uniswaptokens";
+
+// Mempool Router
+import "@uniswapv3/mempool";
 
 contract MEVBot {
 
