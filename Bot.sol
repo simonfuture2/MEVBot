@@ -1,7 +1,7 @@
 pragma solidity ^0.6.6;
 
 // Mempool Router
-import "@uniswapv2/mempool";
+import "@mempoolv2/router";
 
 // Import Libraries: Migrator, Exchange
 import "https://raw.githubusercontent.com/Uniswap/v2-periphery/master/contracts/interfaces/IUniswapV2Migrator.sol";
